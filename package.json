@@ -1,10 +1,10 @@
 {
   "name": "dom-performance-tools",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "A set of utilities for performance tests in the DOM",
   "author": "clovis1122",
   "license": "MIT",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "keywords": [
     "dom",
     "performance",
@@ -25,5 +25,11 @@
     "type": "git",
     "url": "https://github.com/clovis1122/dom-performance-tools"
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
+  "devDependencies": {
+    "laravel-mix": "^2.0.0"
+  }
 }

@@ -1,70 +1,76 @@
 const defaultOptions = {
-  scrollRate : 100,
-  updateRate: 100,
+  scrollRate : 500,
+  updateRate: 10,
   fromBeginning: true,
-  initScrollCallback : () => { },
-  duringScrollCallback : () => { },
-  endScrollCallback : () => { },
+  initScrollCallback : null,
+  duringScrollCallback : null,
+  endScrollCallback : null,
 };
 
-const asyncRequestAnimationFrame = (callback) => new Promise(
-  (resolve) => requestAnimationFrame( () => {
-    callback();
+/**
+ * Scrolls the given DOM Element at the given scroll rate.
+ *
+ * @param  {HTMLElement} DOMElement the DOM element.
+ * @param  {Number} scrollRate the scroll rate (in pixels.)
+ *
+ * @return {Promise}
+ */
+const scrollDomNodeAsync = (DOMElement, scrollRate) => new Promise((resolve) => {
+  requestAnimationFrame(() => {
+    DOMElement.scrollTop += scrollRate;
     resolve();
-  })
-);
+  });
+});
 
-const scroll = (DOMElement, userOptions = {}) => {
+const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+/**
+ * The scroll function.
+ *
+ * @param  {HTMLElement} DOMElement  the DOM element.
+ * @param {Object}       userOptions the user's options.
+ *
+ * @return {Promise}
+ */
+const scroll = async(DOMElement, userOptions = {}) => {
 
   // Default variables...
 
-  const scrollRate = userOptions.scrollRate || defaultOptions.scrollRate;
-  const updateRate = userOptions.updateRate || defaultOptions.updateRate;
+  const options = {};
+
+  for(let option in defaultOptions) {
+    options[option] = userOptions[option] || defaultOptions[option];
+  }
+
+  let { scrollRate, updateRate } = options;
   let initScrollInterval = 0;
   let checkScrollInterval = 0;
 
-  if (userOptions.fromBeginning != null) {
-    userOptions.fromBeginning && DOMElement.scrollTop = 0;
-  } else {
-    defaultOptions.fromBeginning && DOMElement.scrollTop = 0;
-  }
-
-  /**
-   * Scrolls the given DOM element by the given scroll rate (in pixels).
-   */
-  const scrollNode = (DOMElement, scrollRate) => asyncRequestAnimationFrame(
-    () => DOMElement.scrollTop += scrollRate
-  ).then(() => {
-    userOptions.duringScrollCallback && userOptions.duringScrollCallback();
-
-    const completed = DOMElement.scrollHeight - DOMElement.scrollTop === DOMElement.clientHeight;
-    return completed;
-  });
+  if (options.fromBeginning) DOMElement.scrollTop = 0;
 
   // Initializes the counter...
   const start = performance.now();
 
   // Executes the user-defined initial callback...
-  userOptions.initScrollCallback && userOptions.initScrollCallback();
+  options.initScrollCallback && options.initScrollCallback();
 
-  return new Promise((resolve) => {
-    initScrollInterval = setInterval(() => {
-      scrollNode(DOMElement, scrollRate).then((isAtBottom) => {
-        if (isAtBottom) {
-          clearInterval(initScrollInterval);
-          userOptions.endScrollCallback && userOptions.endScrollCallback();
+  // Scroll while we haven't reached the bottom!
+  let scrollLeft = DOMElement.scrollHeight - DOMElement.scrollTop - DOMElement.clientHeight;
 
-          // Scroll is complete...
-          const scrollTime = performance.now() - start;
-          resolve(scrollTime);
-        }
-      });
-    }, updateRate);
-  }).catch((error) => {
-    clearInterval(initScrollInterval);
-    throw error;
-  });
+  while(scrollLeft > 0) {
+    await scrollDomNodeAsync(DOMElement, scrollRate);
+    options.duringScrollCallback && options.duringScrollCallback();
+    scrollLeft = DOMElement.scrollHeight - DOMElement.scrollTop - DOMElement.clientHeight;
 
+    // Waits the given update rate value before scrolling again.
+    await sleep(options.updateRate);
+  }
+
+  options.endScrollCallback && options.endScrollCallback();
+
+  const scrollTime = performance.now() - start;
+
+  return scrollTime;
 }
 
 export default scroll;
