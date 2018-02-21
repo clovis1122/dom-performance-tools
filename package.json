@@ -1,9 +1,17 @@
 {
   "name": "dom-performance-tools",
   "version": "0.2.0",
-  "description": "An set of utilities to determine the performance of DOM elements.",
-  "main": "src/index.js",
+  "description": "A set of utilities for performance tests in the DOM",
   "author": "clovis1122",
+  "license": "MIT",
+  "main": "src/index.js",
+  "keywords": [
+    "dom",
+    "performance",
+    "tools",
+    "fast",
+    "measure"
+  ],
   "scripts": {
     "dev": "npm run development",
     "development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
@@ -13,6 +21,9 @@
     "prod": "npm run production",
     "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
-  "keywords": [],
-  "license": "MIT"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clovis1122/dom-performance-tools"
+  },
+  "files": ["dist", "src"],
 }
